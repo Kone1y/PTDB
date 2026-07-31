@@ -1,10 +1,23 @@
 # PTDB — Plant Transporter Database
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20593739.svg)](https://doi.org/10.5281/zenodo.20593739)
+[![Docker](https://img.shields.io/badge/docker-transporter--pred-blue?logo=docker)](https://hub.docker.com/r/paulfire/transporter-pred)
+[![Website](https://img.shields.io/badge/website-PTDB-brightgreen)](https://yanglab.hzau.edu.cn/ptdb/index/home)
 
 A comprehensive web-based database for plant transporter proteins, providing systematic classification, evolutionary analysis, cross-species comparison, and online prediction tools.
 
 **Website:** [https://yanglab.hzau.edu.cn/ptdb/index/home](https://yanglab.hzau.edu.cn/ptdb/index/home)
+
+## Quick Links
+
+| Resource | Location |
+|----------|----------|
+| Web portal | https://yanglab.hzau.edu.cn/ptdb/index/home |
+| Bulk download | https://yanglab.hzau.edu.cn/ptdb/index/download |
+| REST API documentation | https://yanglab.hzau.edu.cn/ptdb/index/api_documentation |
+| Source code | https://github.com/Kone1y/PlantTPDB |
+| Archived datasets (Zenodo) | https://doi.org/10.5281/zenodo.20593739 |
+| Docker image | https://hub.docker.com/r/paulfire/transporter-pred |
 
 ## Overview
 
@@ -102,6 +115,42 @@ bash Tools/gene_family_expansion_contraction.sh \
 
 ---
 
+## Containerized Pipeline
+
+A Docker image of the transporter identification pipeline is provided so that the identification and benchmarking analyses can be reproduced without manual dependency installation.
+
+```bash
+docker pull paulfire/transporter-pred:latest
+
+docker run --rm --platform linux/amd64 \
+      -v "$PWD/data/proteins.fasta:/in/input.fa:ro" \
+      -v "$PWD/results:/out" \
+      -e SPECIES=Oryza_sativa \
+      -e PTD_THREADS=10 \
+      paulfire/transporter-pred:latest
+```
+
+The image bundles the identification workflow together with its dependencies and configuration files. Image tags follow the database release versions, so a given release can always be re-run against the exact software stack used to produce it. Singularity/Apptainer users can convert the image directly:
+
+```bash
+apptainer build transporter-pred.sif docker://paulfire/transporter-pred:latest
+```
+
+See the [Docker Hub page](https://hub.docker.com/r/paulfire/transporter-pred) for available tags and runtime options.
+
+## Programmatic Access (REST API)
+
+In addition to interactive browsing, PTDB exposes a REST API for scripted and high-throughput use:
+
+| Capability | Description |
+|------------|-------------|
+| Gene-identifier lookup | Retrieve the full annotation record for a single transporter gene |
+| TC-family retrieval | Retrieve all members of a given TC family or subfamily |
+| Batch queries | Submit multiple identifiers in a single request |
+
+Endpoint paths, request/response schemas, rate limits, and worked examples are documented at
+[https://yanglab.hzau.edu.cn/ptdb/index/api_documentation](https://yanglab.hzau.edu.cn/ptdb/index/api_documentation).
+
 ## Project Structure
 
 ```
@@ -114,6 +163,7 @@ ptdb/
 ├── README_CN.md
 ├── README_Tools.md
 ├── README_Tools_CN.md
+├── CHANGELOG.md
 ├── LICENSE
 ├── CITATION.cff
 └── ...
@@ -123,11 +173,41 @@ ptdb/
 
 ## Data Availability & Reproducibility
 
-All core datasets, predicted transporter tables, structural models, confidence metrics, analysis scripts, and pipeline configurations are deposited in stable public repositories with versioned releases.
+All core datasets, predicted transporter tables, structural models, confidence metrics, analysis scripts, and pipeline configurations are deposited in stable public repositories with versioned releases. The database is not browse-only: the complete contents can be downloaded in bulk.
 
-- **Source Code**: This GitHub repository
-- **Version Control**: Git-based versioning with tagged releases and changelog
-- **Data Deposition**: Core datasets available for bulk download via the [Download page](https://yanglab.hzau.edu.cn/ptdb/index/download) and the repository releases
+### 1. Bulk download
+
+All core datasets are available at the [Download page](https://yanglab.hzau.edu.cn/ptdb/index/download), including:
+
+- Predicted transporter tables with evidence codes and confidence tiers
+- TC classification results
+- Predicted structural and topological features
+- AlphaFold 3 structural models
+- Model-quality metrics (pLDDT, pTM, PAE summaries) and structural-comparison results
+
+### 2. Programmatic access
+
+A documented REST API supports gene-identifier lookup, TC-family retrieval, and batch queries — see [Programmatic Access](#programmatic-access-rest-api) above.
+
+### 3. Source code and archival datasets
+
+- **Source code and configuration files:** [github.com/Kone1y/PlantTPDB](https://github.com/Kone1y/PlantTPDB)
+- **Archived datasets:** deposited on Zenodo under the concept DOI [10.5281/zenodo.20593739](https://doi.org/10.5281/zenodo.20593739). Each released dataset version receives its own version-specific DOI, providing permanent and citable access to the exact data underlying any given analysis.
+
+### 4. Containerization
+
+Docker containers for the identification pipeline are published at [hub.docker.com/r/paulfire/transporter-pred](https://hub.docker.com/r/paulfire/transporter-pred), enabling full computational reproducibility of the identification and benchmarking analyses. See [Containerized Pipeline](#containerized-pipeline) above.
+
+### 5. Versioned releases
+
+- Major releases follow an approximately annual cycle.
+- Each major release ships with a changelog entry and a citable Zenodo snapshot.
+- Between major releases, the literature-tracking module refreshes the knowledge base on a 7-day cycle; every update is recorded in the version history.
+- Git tags in this repository correspond one-to-one with released database versions.
+
+### 6. Long-term maintenance
+
+PTDB is hosted and maintained by Huazhong Agricultural University through **at least 2035**. Mirrored archival storage is maintained independently of the primary web portal, so that datasets remain retrievable even if the web service is interrupted. Issues and data requests are tracked publicly in this repository.
 
 ## Citation
 
@@ -137,6 +217,8 @@ If you use PTDB in your research, please cite it as follows:
 Liang, G., Huang, W., & Luo, C. (2026). PTDB: Plant Transporter Database.
 Zenodo. https://doi.org/10.5281/zenodo.20593739
 ```
+
+To cite a specific dataset version, use the version-specific DOI listed on the corresponding [Zenodo record](https://doi.org/10.5281/zenodo.20593739).
 
 ## License
 
