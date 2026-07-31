@@ -1,10 +1,23 @@
 # PTDB — 植物转运蛋白数据库
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20593739.svg)](https://doi.org/10.5281/zenodo.20593739)
+[![Docker](https://img.shields.io/badge/docker-transporter--pred-blue?logo=docker)](https://hub.docker.com/r/paulfire/transporter-pred)
+[![Website](https://img.shields.io/badge/website-PTDB-brightgreen)](https://yanglab.hzau.edu.cn/ptdb/index/home)
 
 一个综合性植物转运蛋白数据库，提供系统分类、进化分析、跨物种比较和在线预测工具。
 
 **网站地址：** [https://yanglab.hzau.edu.cn/ptdb/index/home](https://yanglab.hzau.edu.cn/ptdb/index/home)
+
+## 快速链接
+
+| 资源 | 地址 |
+|------|------|
+| 网站主页 | https://yanglab.hzau.edu.cn/ptdb/index/home |
+| 数据批量下载 | https://yanglab.hzau.edu.cn/ptdb/index/download |
+| REST API 文档 | https://yanglab.hzau.edu.cn/ptdb/index/api_documentation |
+| 源代码仓库 | https://github.com/Kone1y/PlantTPDB |
+| 数据存档（Zenodo） | https://doi.org/10.5281/zenodo.20593739 |
+| Docker 镜像 | https://hub.docker.com/r/paulfire/transporter-pred |
 
 ## 项目简介
 
@@ -102,6 +115,42 @@ bash Tools/gene_family_expansion_contraction.sh \
 
 ---
 
+## 容器化流程（Docker / Singularity）
+
+我们为转运蛋白鉴定流程提供了 Docker 镜像，用户无需手动安装依赖即可复现鉴定与基准测试分析。
+
+```bash
+docker pull paulfire/transporter-pred:latest
+
+docker run --rm --platform linux/amd64 \
+      -v "$PWD/data/proteins.fasta:/in/input.fa:ro" \
+      -v "$PWD/results:/out" \
+      -e SPECIES=Oryza_sativa \
+      -e PTD_THREADS=10 \
+      paulfire/transporter-pred:latest
+```
+
+镜像内已打包鉴定流程及其全部依赖和配置文件。镜像标签与数据库发布版本一一对应，因此任一版本都可以在其原始软件环境下重新运行。使用 Singularity/Apptainer 的用户可直接转换镜像：
+
+```bash
+apptainer build transporter-pred.sif docker://paulfire/transporter-pred:latest
+```
+
+可用标签与运行参数详见 [Docker Hub 页面](https://hub.docker.com/r/paulfire/transporter-pred)。
+
+## 程序化访问（REST API）
+
+除交互式浏览外，PTDB 还提供 REST API，支持脚本调用和高通量查询：
+
+| 功能 | 说明 |
+|------|------|
+| 基因编号查询 | 获取单个转运蛋白基因的完整注释记录 |
+| TC 家族检索 | 获取指定 TC 家族或亚家族的全部成员 |
+| 批量查询 | 单次请求提交多个基因编号 |
+
+接口路径、请求/响应格式、访问频率限制及调用示例详见
+[https://yanglab.hzau.edu.cn/ptdb/index/api_documentation](https://yanglab.hzau.edu.cn/ptdb/index/api_documentation)。
+
 ## 项目结构
 
 ```
@@ -114,6 +163,7 @@ ptdb/
 ├── README_CN.md
 ├── README_Tools.md
 ├── README_Tools_CN.md
+├── CHANGELOG.md
 ├── LICENSE
 ├── CITATION.cff
 └── ...
@@ -123,11 +173,41 @@ ptdb/
 
 ## 数据可用性与可重现性
 
-所有核心数据集、预测转运蛋白表格、结构模型、置信度指标、分析脚本和流程配置均存放在稳定的公共存储库中，并提供版本化发布。
+所有核心数据集、预测转运蛋白表格、结构模型、置信度指标、分析脚本和流程配置均存放在稳定的公共存储库中，并提供版本化发布。数据库并非仅支持在线浏览，全部内容均可批量下载。
 
-- **源代码**：本 GitHub 仓库
-- **版本控制**：基于 Git 的版本管理，带有标签发布和更新日志
-- **数据存档**：核心数据集可通过 [下载页面](https://yanglab.hzau.edu.cn/ptdb/index/download)和仓库 Releases 批量获取
+### 1. 批量下载
+
+所有核心数据集可在 [下载页面](https://yanglab.hzau.edu.cn/ptdb/index/download) 获取，包括：
+
+- 带证据代码与置信度分级的预测转运蛋白表
+- TC 分类结果
+- 预测的结构与拓扑特征
+- AlphaFold 3 结构模型
+- 模型质量指标（pLDDT、pTM、PAE 汇总）及结构比对结果
+
+### 2. 程序化访问
+
+提供文档完备的 REST API，支持基因编号查询、TC 家族检索和批量查询，详见上文 [程序化访问（REST API）](#程序化访问rest-api)。
+
+### 3. 源代码与数据存档
+
+- **源代码与配置文件：** [github.com/Kone1y/PlantTPDB](https://github.com/Kone1y/PlantTPDB)
+- **数据存档：** 全部核心数据集存放于 Zenodo，概念 DOI 为 [10.5281/zenodo.20593739](https://doi.org/10.5281/zenodo.20593739)。每个发布版本均分配独立的版本 DOI，为每一版数据提供永久、可引用的访问入口。
+
+### 4. 容器化
+
+转运蛋白鉴定流程的 Docker 镜像发布于 [hub.docker.com/r/paulfire/transporter-pred](https://hub.docker.com/r/paulfire/transporter-pred)，可完整复现鉴定与基准测试分析，详见上文 [容器化流程](#容器化流程docker--singularity)。
+
+### 5. 版本化发布
+
+- 主版本大致按年度周期发布。
+- 每个主版本均附带更新日志（changelog）和可引用的 Zenodo 存档快照。
+- 主版本之间，文献追踪模块以 7 天为周期更新知识库，每次更新均记入版本历史。
+- 本仓库的 Git 标签与数据库发布版本一一对应。
+
+### 6. 长期维护
+
+PTDB 由华中农业大学托管与维护，**保障运行至 2035 年及以后**。同时在主站之外独立维护镜像存档存储，即使网站服务中断，数据仍可获取。问题反馈与数据需求在本仓库中公开跟踪。
 
 ## 引用
 
@@ -137,6 +217,8 @@ ptdb/
 Liang, G., Huang, W., & Luo, C. (2026). PTDB: Plant Transporter Database.
 Zenodo. https://doi.org/10.5281/zenodo.20593739
 ```
+
+如需引用特定版本的数据集，请使用对应 [Zenodo 记录](https://doi.org/10.5281/zenodo.20593739) 中列出的版本 DOI。
 
 ## 许可证
 
